@@ -1,5 +1,4 @@
 import express from "express";
-import protectRoute from "../middleware/auth.js";
 import {
     getFeedback,
     getFeedbacks,
@@ -12,6 +11,12 @@ import {
     updateComment,
     deleteComment,
 } from "../controllers/comment.js";
+import {
+    addReply,
+    updateReply,
+    deleteReply,
+} from "../controllers/reply.js";
+import protectRoute from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -29,9 +34,10 @@ router.route("/comment/:id").post(addComment);
 // Params: Comment id
 router.route("/comment/:id").put(updateComment).delete(deleteComment);
 
-// router
-//     .route("/reply/:id")
-//     .post(postReply)
-//     .put(updateReply)
-//     .delete(deleteReply);
+// Params: Comment id
+router.route("/reply/:id").post(addReply);
+
+// Params: Reply id
+router.route("/reply/:id").put(updateReply).delete(deleteReply);
+
 export default router;
