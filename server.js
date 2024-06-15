@@ -1,9 +1,11 @@
 import express from "express";
-import dotenv from "dotenv";
-import chalk from "chalk";
 import connectDB from "./config/db.js";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import chalk from "chalk";
 import errorHandler from "./middleware/error.js";
 import feedbacks from "./routes/feedbacks.js";
+import auth from "./routes/auth.js";
 
 // Load env variables
 dotenv.config({ path: "./config/config.env" });
@@ -17,9 +19,14 @@ const app = express();
 // Body parser
 app.use(express.json());
 
+// Cookie parser
+app.use(cookieParser());
+
 //Mount routers
 app.use("/feedbacks", feedbacks);
+app.use("/auth", auth);
 
+// Error Handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 8080;
