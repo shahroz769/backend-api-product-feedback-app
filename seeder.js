@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 dotenv.config({ path: "./config/config.env" });
 
 // Load models
-import Feedback from "./models/Feedback.js";
+import { Feedback } from "./models/Feedback.js";
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);

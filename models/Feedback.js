@@ -1,54 +1,81 @@
 import mongoose from "mongoose";
 
-const ReplySchema = new mongoose.Schema({
-    content: {
-        type: String,
-        required: [true, "Please add a reply"],
-        trim: true,
-        maxlength: [500, "Reply can not be more than 500 characters"],
+// Reply schema
+const ReplySchema = new mongoose.Schema(
+    {
+        content: {
+            type: String,
+            required: [true, "Please add a reply"],
+            trim: true,
+            maxlength: [250, "Reply cannot be more than 250 characters"],
+        },
+        replyingTo: {
+            type: String,
+        },
     },
-    replyingTo: {
-        type: String,
-    },
-});
+    { timestamps: true }
+);
 
-const CommentSchema = new mongoose.Schema({
-    content: {
-        type: String,
-        required: [true, "Please add a comment"],
-        trim: true,
-        maxlength: [500, "Comment can not be more than 500 characters"],
+// Comment schema
+const CommentSchema = new mongoose.Schema(
+    {
+        content: {
+            type: String,
+            required: [true, "Please add a comment"],
+            trim: true,
+            maxlength: [250, "Comment cannot be more than 250 characters"],
+        },
+        replies: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Reply",
+            },
+        ],
     },
-    replies: [ReplySchema],
-});
+    { timestamps: true }
+);
 
-const FeedbackSchema = new mongoose.Schema({
-    title: {
-        type: String,
-        required: [true, "Please add a title"],
-        trim: true,
-        maxlength: [100, "Title can not be more than 100 characters"],
+// Feedback schema
+const FeedbackSchema = new mongoose.Schema(
+    {
+        title: {
+            type: String,
+            required: [true, "Please add a title"],
+            trim: true,
+            maxlength: [100, "Title cannot be more than 100 characters"],
+        },
+        category: {
+            type: String,
+            required: [true, "Please add a category"],
+            enum: ["ui", "ux", "enhancement", "bug", "feature"],
+        },
+        upvotes: {
+            type: Number,
+            default: 0,
+        },
+        status: {
+            type: String,
+            enum: ["suggestion", "planned", "in-progress", "live"],
+        },
+        description: {
+            type: String,
+            required: [true, "Please add a description"],
+            maxlength: [500, "Description cannot be more than 500 characters"],
+        },
+        comments: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Comment",
+            },
+        ],
     },
-    category: {
-        type: String,
-        required: [true, "Please add a category"],
-        enum: ["ui", "ux", "enhancement", "bug", "feature"],
-    },
-    upvotes: {
-        type: Number,
-    },
-    status: {
-        type: String,
-        enum: ["suggestion", "planned", "in-progress", "live"],
-    },
-    description: {
-        type: String,
-        required: [true, "Please add description"],
-        maxlength: [500, "Description can not be more than 500 characters"],
-    },
-    comments: [CommentSchema],
-});
+    {
+        timestamps: true,
+    }
+);
 
+const Reply = mongoose.model("Reply", ReplySchema);
+const Comment = mongoose.model("Comment", CommentSchema);
 const Feedback = mongoose.model("Feedback", FeedbackSchema);
 
-export default Feedback;
+export { Feedback, Comment, Reply };

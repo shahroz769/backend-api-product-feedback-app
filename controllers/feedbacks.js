@@ -1,13 +1,17 @@
 import ErrorResponse from "../utils/errorResponse.js";
 import asyncHandler from "../middleware/asyncHandler.js";
-import Feedback from "../models/Feedback.js";
+import { Feedback } from "../models/Feedback.js";
 
 // @desc Get single feedback
 // @route GET /feedbacks/:id
 // @access Private
 const getFeedback = asyncHandler(async (req, res, next) => {
-    const feedback = await Feedback.findById(req.params.id);
-
+    let feedback = await Feedback.findById(req.params.id).populate({
+        path: "comments",
+        populate: {
+            path: "replies",
+        },
+    });
     if (!feedback) {
         return next(
             new ErrorResponse(
@@ -16,7 +20,6 @@ const getFeedback = asyncHandler(async (req, res, next) => {
             )
         );
     }
-
     res.status(200).json({ success: true, data: feedback });
 });
 
@@ -24,8 +27,12 @@ const getFeedback = asyncHandler(async (req, res, next) => {
 // @route GET /feedbacks
 // @access Private
 const getFeedbacks = asyncHandler(async (req, res, next) => {
-    const feedback = await Feedback.find();
-
+    let feedback = await Feedback.find().populate({
+        path: "comments",
+        populate: {
+            path: "replies",
+        },
+    });
     if (!feedback) {
         return next(
             new ErrorResponse(
@@ -34,15 +41,14 @@ const getFeedbacks = asyncHandler(async (req, res, next) => {
             )
         );
     }
-
     res.status(200).json({ success: true, data: feedback });
 });
 
-// @desc Add new feedback
+// @desc Add feedback
 // @route POST /feedbacks
 // @access Private
 const addFeedback = asyncHandler(async (req, res, next) => {
-    const feedback = await Feedback.create(req.body);
+    let feedback = await Feedback.create(req.body);
     res.status(200).json({ success: true, data: feedback });
 });
 
@@ -51,7 +57,6 @@ const addFeedback = asyncHandler(async (req, res, next) => {
 // @access Private
 const updateFeedback = asyncHandler(async (req, res, next) => {
     let feedback = await Feedback.findById(req.params.id);
-
     if (!feedback) {
         return next(
             new ErrorResponse(
@@ -60,12 +65,10 @@ const updateFeedback = asyncHandler(async (req, res, next) => {
             )
         );
     }
-
     feedback = await Feedback.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
         runValidators: true,
     });
-
     res.status(200).json({ success: true, data: { feedback } });
 });
 
@@ -73,8 +76,7 @@ const updateFeedback = asyncHandler(async (req, res, next) => {
 // @route DELETE /feedbacks/:id
 // @access Private
 const deleteFeedback = asyncHandler(async (req, res, next) => {
-    const feedback = await Feedback.findById(req.params.id);
-
+    let feedback = await Feedback.findById(req.params.id);
     if (!feedback) {
         return next(
             new ErrorResponse(
@@ -83,9 +85,7 @@ const deleteFeedback = asyncHandler(async (req, res, next) => {
             )
         );
     }
-
     await Feedback.findByIdAndDelete(req.params.id);
-
     res.status(200).json({ success: true, data: {} });
 });
 

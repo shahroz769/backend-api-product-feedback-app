@@ -7,29 +7,31 @@ import {
     updateFeedback,
     deleteFeedback,
 } from "../controllers/feedbacks.js";
+import {
+    addComment,
+    updateComment,
+    deleteComment,
+} from "../controllers/comment.js";
 
 const router = express.Router();
 
-router
-    .route("/")
-    .get(protectRoute, getFeedbacks)
-    .post(protectRoute, addFeedback);
+router.route("/").get(getFeedbacks).post(addFeedback);
 
 router
     .route("/:id")
-    .get(protectRoute, getFeedback)
-    .put(protectRoute, updateFeedback)
-    .delete(protectRoute, deleteFeedback);
+    .get(getFeedback)
+    .put(updateFeedback)
+    .delete(deleteFeedback);
 
-// router
-//     .route("/comment/:id")
-//     .post(protectRoute, postComment)
-//     .put(protectRoute, updateComment)
-//     .delete(protectRoute, deleteComment);
+// Params: Feedback id
+router.route("/comment/:id").post(addComment);
+
+// Params: Comment id
+router.route("/comment/:id").put(updateComment).delete(deleteComment);
 
 // router
 //     .route("/reply/:id")
-//     .post(protectRoute, postReply)
-//     .put(protectRoute, updateReply)
-//     .delete(protectRoute, deleteReply);
+//     .post(postReply)
+//     .put(updateReply)
+//     .delete(deleteReply);
 export default router;
