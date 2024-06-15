@@ -1,4 +1,5 @@
 import express from "express";
+import protectRoute from "../middleware/auth.js";
 import {
     getFeedback,
     getFeedbacks,
@@ -9,12 +10,26 @@ import {
 
 const router = express.Router();
 
-router.route("/").get(getFeedbacks).post(addFeedback);
+router
+    .route("/")
+    .get(protectRoute, getFeedbacks)
+    .post(protectRoute, addFeedback);
 
 router
     .route("/:id")
-    .get(getFeedback)
-    .put(updateFeedback)
-    .delete(deleteFeedback);
+    .get(protectRoute, getFeedback)
+    .put(protectRoute, updateFeedback)
+    .delete(protectRoute, deleteFeedback);
 
+// router
+//     .route("/comment/:id")
+//     .post(protectRoute, postComment)
+//     .put(protectRoute, updateComment)
+//     .delete(protectRoute, deleteComment);
+
+// router
+//     .route("/reply/:id")
+//     .post(protectRoute, postReply)
+//     .put(protectRoute, updateReply)
+//     .delete(protectRoute, deleteReply);
 export default router;
