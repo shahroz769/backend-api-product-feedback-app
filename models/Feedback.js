@@ -92,6 +92,32 @@ const FeedbackSchema = new mongoose.Schema(
     }
 );
 
+FeedbackSchema.pre(
+    "deleteOne",
+    { document: true, query: false },
+    async function (next) {
+        const feedback = this;
+        const comments = await Comment.find({
+            _id: { $in: feedback.comments },
+        });
+        comments.forEach(async (comment) => {
+            await Reply.deleteMany({ _id: { $in: comment.replies } });
+        });
+        await Comment.deleteMany({ _id: { $in: feedback.comments } });
+        next();
+    }
+);
+
+CommentSchema.pre(
+    "deleteOne",
+    { document: true, query: false },
+    async function (next) {
+        const comment = this;
+        await Reply.deleteMany({ _id: { $in: comment.replies } });
+        next();
+    }
+);
+
 const Reply = mongoose.model("Reply", ReplySchema);
 const Comment = mongoose.model("Comment", CommentSchema);
 const Feedback = mongoose.model("Feedback", FeedbackSchema);

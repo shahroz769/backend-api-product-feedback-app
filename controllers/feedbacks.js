@@ -120,7 +120,7 @@ const deleteFeedback = asyncHandler(async (req, res, next) => {
             )
         );
     }
-    await Feedback.findByIdAndDelete(req.params.id);
+    await feedback.deleteOne();
     res.status(200).json({ success: true, data: {} });
 });
 
