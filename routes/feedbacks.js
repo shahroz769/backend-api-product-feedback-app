@@ -5,6 +5,8 @@ import {
     addFeedback,
     updateFeedback,
     deleteFeedback,
+    upvoteFeedback,
+    removeUpvoteFeedback,
 } from "../controllers/feedbacks.js";
 import {
     addComment,
@@ -44,5 +46,8 @@ router
     .route("/reply/:id")
     .put(protectRoute, updateReply)
     .delete(protectRoute, deleteReply);
+
+router.route("/upvote/:id").get(protectRoute, upvoteFeedback);
+router.route("/removeupvote/:id").get(protectRoute, removeUpvoteFeedback);
 
 export default router;

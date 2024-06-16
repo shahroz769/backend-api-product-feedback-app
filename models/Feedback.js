@@ -61,10 +61,12 @@ const FeedbackSchema = new mongoose.Schema(
             required: [true, "Please add a category"],
             enum: ["ui", "ux", "enhancement", "bug", "feature"],
         },
-        upvotes: {
-            type: Number,
-            default: 0,
-        },
+        upvotes: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
         status: {
             type: String,
             enum: ["suggestion", "planned", "in-progress", "live"],

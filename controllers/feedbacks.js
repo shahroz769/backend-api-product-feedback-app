@@ -124,10 +124,70 @@ const deleteFeedback = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, data: {} });
 });
 
+// @desc Add upvote
+// @route GET /feedbacks/upvote/:id
+// @access Private
+const upvoteFeedback = asyncHandler(async (req, res, next) => {
+    const { user } = req;
+    let feedback = await Feedback.findById(req.params.id);
+    if (!feedback) {
+        return next(
+            new ErrorResponse(
+                `Feedback not found with id of ${req.params.id}`,
+                404
+            )
+        );
+    }
+    const hasUpvoted = feedback.upvotes.find(
+        (upvote) => upvote.toString() === user._id.toString()
+    );
+    console.log(hasUpvoted);
+    if (hasUpvoted) {
+        return next(
+            new ErrorResponse(
+                `User has already upvoted the feedback with id of ${req.params.id}`,
+                400
+            )
+        );
+    }
+    feedback.upvotes.push(user._id);
+    await feedback.save();
+    res.status(200).json({
+        success: true,
+        upvotesCount: feedback.upvotes.length,
+    });
+});
+
+// @desc Remove upvote
+// @route GET /feedbacks/removeupvote/:id
+// @access Private
+const removeUpvoteFeedback = asyncHandler(async (req, res, next) => {
+    const { user } = req;
+    let feedback = await Feedback.findById(req.params.id);
+    if (!feedback) {
+        return next(
+            new ErrorResponse(
+                `Feedback not found with id of ${req.params.id}`,
+                404
+            )
+        );
+    }
+    feedback.upvotes = feedback.upvotes.filter((upvote) => {
+        upvote !== user._id;
+    });
+    await feedback.save();
+    res.status(200).json({
+        success: true,
+        upvotesCount: feedback.upvotes.length,
+    });
+});
+
 export {
     addFeedback,
     getFeedback,
     getFeedbacks,
     updateFeedback,
     deleteFeedback,
+    upvoteFeedback,
+    removeUpvoteFeedback,
 };
