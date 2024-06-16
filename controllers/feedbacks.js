@@ -14,16 +14,14 @@ const getFeedback = asyncHandler(async (req, res, next) => {
                     path: "replies",
                     populate: {
                         path: "user",
-                        select: "username",
                     },
                 },
                 {
                     path: "user",
-                    select: "username",
                 },
             ],
         })
-        .populate("user", "username");
+        .populate("user");
     if (!feedback) {
         return next(
             new ErrorResponse(
@@ -47,16 +45,14 @@ const getFeedbacks = asyncHandler(async (req, res, next) => {
                     path: "replies",
                     populate: {
                         path: "user",
-                        select: "username",
                     },
                 },
                 {
                     path: "user",
-                    select: "username",
                 },
             ],
         })
-        .populate("user", "username");
+        .populate("user");
     if (!feedbacks) {
         return next(new ErrorResponse(`Feedbacks not found`, 404));
     }
@@ -77,7 +73,16 @@ const addFeedback = asyncHandler(async (req, res, next) => {
 // @route PUT /feedbacks/:id
 // @access Private
 const updateFeedback = asyncHandler(async (req, res, next) => {
+    const { user } = req;
     let feedback = await Feedback.findById(req.params.id);
+    if (user._id.toString() !== feedback.user.toString()) {
+        return next(
+            new ErrorResponse(
+                `Not authorized to edit feedback with id of ${req.params.id}`,
+                403
+            )
+        );
+    }
     if (!feedback) {
         return next(
             new ErrorResponse(

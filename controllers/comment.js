@@ -28,8 +28,17 @@ const addComment = asyncHandler(async (req, res, next) => {
 // @route PUT /feedbacks/comment/:id
 // @access Private
 const updateComment = asyncHandler(async (req, res, next) => {
+    const { user } = req;
     const commentId = req.params.id;
     let comment = await Comment.findById(commentId);
+    if (user._id.toString() !== comment.user.toString()) {
+        return next(
+            new ErrorResponse(
+                `Not authorized to edit comment with id of ${commentId}`,
+                403
+            )
+        );
+    }
     if (!comment) {
         return next(
             new ErrorResponse(`Comment not found with id of ${commentId}`, 404)
