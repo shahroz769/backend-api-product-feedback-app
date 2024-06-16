@@ -11,6 +11,13 @@ const ReplySchema = new mongoose.Schema(
         },
         replyingTo: {
             type: String,
+            required: [true, "Please add replyingTo"],
+            maxlength: [32, "Username cannot be more than 32 characters"],
+        },
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
         },
     },
     { timestamps: true }
@@ -31,6 +38,11 @@ const CommentSchema = new mongoose.Schema(
                 ref: "Reply",
             },
         ],
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
     },
     { timestamps: true }
 );
@@ -56,6 +68,7 @@ const FeedbackSchema = new mongoose.Schema(
         status: {
             type: String,
             enum: ["suggestion", "planned", "in-progress", "live"],
+            default: "suggestion",
         },
         description: {
             type: String,
@@ -68,6 +81,11 @@ const FeedbackSchema = new mongoose.Schema(
                 ref: "Comment",
             },
         ],
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
     },
     {
         timestamps: true,

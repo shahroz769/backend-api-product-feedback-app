@@ -6,6 +6,8 @@ import { Feedback, Comment } from "../models/Feedback.js";
 // @route POST /feedbacks/comment/:id
 // @access Private
 const addComment = asyncHandler(async (req, res, next) => {
+    const { user } = req;
+    const commentData = { ...req.body, user: user._id };
     const feedbackId = req.params.id;
     let feedback = await Feedback.findById(feedbackId);
     if (!feedback) {
@@ -16,7 +18,7 @@ const addComment = asyncHandler(async (req, res, next) => {
             )
         );
     }
-    let comment = await Comment.create(req.body);
+    let comment = await Comment.create(commentData);
     feedback.comments.push(comment._id);
     await feedback.save();
     res.status(200).json({ success: true, data: comment });

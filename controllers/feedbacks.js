@@ -6,12 +6,24 @@ import { Feedback } from "../models/Feedback.js";
 // @route GET /feedbacks/:id
 // @access Private
 const getFeedback = asyncHandler(async (req, res, next) => {
-    let feedback = await Feedback.findById(req.params.id).populate({
-        path: "comments",
-        populate: {
-            path: "replies",
-        },
-    });
+    let feedback = await Feedback.findById(req.params.id)
+        .populate({
+            path: "comments",
+            populate: [
+                {
+                    path: "replies",
+                    populate: {
+                        path: "user",
+                        select: "username",
+                    },
+                },
+                {
+                    path: "user",
+                    select: "username",
+                },
+            ],
+        })
+        .populate("user", "username");
     if (!feedback) {
         return next(
             new ErrorResponse(
@@ -27,28 +39,37 @@ const getFeedback = asyncHandler(async (req, res, next) => {
 // @route GET /feedbacks
 // @access Private
 const getFeedbacks = asyncHandler(async (req, res, next) => {
-    let feedback = await Feedback.find().populate({
-        path: "comments",
-        populate: {
-            path: "replies",
-        },
-    });
-    if (!feedback) {
-        return next(
-            new ErrorResponse(
-                `Feedback not found with id of ${req.params.id}`,
-                404
-            )
-        );
+    let feedbacks = await Feedback.find()
+        .populate({
+            path: "comments",
+            populate: [
+                {
+                    path: "replies",
+                    populate: {
+                        path: "user",
+                        select: "username",
+                    },
+                },
+                {
+                    path: "user",
+                    select: "username",
+                },
+            ],
+        })
+        .populate("user", "username");
+    if (!feedbacks) {
+        return next(new ErrorResponse(`Feedbacks not found`, 404));
     }
-    res.status(200).json({ success: true, data: feedback });
+    res.status(200).json({ success: true, data: feedbacks });
 });
 
 // @desc Add feedback
 // @route POST /feedbacks
 // @access Private
 const addFeedback = asyncHandler(async (req, res, next) => {
-    let feedback = await Feedback.create(req.body);
+    const { user } = req;
+    const feedbackData = { ...req.body, user: user._id };
+    let feedback = await Feedback.create(feedbackData);
     res.status(200).json({ success: true, data: feedback });
 });
 

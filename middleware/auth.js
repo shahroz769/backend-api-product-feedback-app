@@ -29,7 +29,7 @@ const protectRoute = asyncHandler(async (req, res, next) => {
     // Verify the token
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findOne({ email: decoded.email });
+        req.user = await User.findOne({ _id: decoded.userId });
         next();
     } catch (err) {
         return next(

@@ -72,7 +72,7 @@ const login = asyncHandler(async (req, res, next) => {
 // Get token from User model, create cookie, and send response
 const sendTokenResponse = (user, statusCode, res) => {
     // Create token
-    const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE,
     });
 
