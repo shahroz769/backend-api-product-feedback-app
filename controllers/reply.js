@@ -63,8 +63,17 @@ const updateReply = asyncHandler(async (req, res, next) => {
 // @route DELETE /feedbacks/reply/:id
 // @access Private
 const deleteReply = asyncHandler(async (req, res, next) => {
+    const { user } = req;
     const replyId = req.params.id;
     let reply = await Reply.findById(replyId);
+    if (user._id.toString() !== reply.user.toString()) {
+        return next(
+            new ErrorResponse(
+                `Not authorized to edit reply with id of ${replyId}`,
+                403
+            )
+        );
+    }
     if (!reply) {
         return next(
             new ErrorResponse(`Reply not found with id of ${replyId}`, 404)

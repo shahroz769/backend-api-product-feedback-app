@@ -102,7 +102,16 @@ const updateFeedback = asyncHandler(async (req, res, next) => {
 // @route DELETE /feedbacks/:id
 // @access Private
 const deleteFeedback = asyncHandler(async (req, res, next) => {
+    const { user } = req;
     let feedback = await Feedback.findById(req.params.id);
+    if (user._id.toString() !== feedback.user.toString()) {
+        return next(
+            new ErrorResponse(
+                `Not authorized to delete feedback with id of ${req.params.id}`,
+                403
+            )
+        );
+    }
     if (!feedback) {
         return next(
             new ErrorResponse(

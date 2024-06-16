@@ -55,8 +55,17 @@ const updateComment = asyncHandler(async (req, res, next) => {
 // @route DELETE /feedbacks/comment/:id
 // @access Private
 const deleteComment = asyncHandler(async (req, res, next) => {
+    const { user } = req;
     const commentId = req.params.id;
     let comment = await Comment.findById(commentId);
+    if (user._id.toString() !== comment.user.toString()) {
+        return next(
+            new ErrorResponse(
+                `Not authorized to delete comment with id of ${commentId}`,
+                403
+            )
+        );
+    }
     if (!comment) {
         return next(
             new ErrorResponse(`Comment not found with id of ${commentId}`, 404)
