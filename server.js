@@ -6,6 +6,7 @@ import chalk from "chalk";
 import errorHandler from "./middleware/error.js";
 import feedbacks from "./routes/feedbacks.js";
 import auth from "./routes/auth.js";
+import user from "./routes/user.js";
 
 // Load env variables
 dotenv.config({ path: "./config/config.env" });
@@ -25,6 +26,7 @@ app.use(cookieParser());
 //Mount routers
 app.use("/feedbacks", feedbacks);
 app.use("/auth", auth);
+app.use("/user", user);
 
 // Error Handler
 app.use(errorHandler);
