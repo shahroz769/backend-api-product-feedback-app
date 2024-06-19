@@ -1,6 +1,8 @@
 import ErrorResponse from "../utils/errorResponse.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import User from "../models/User.js";
+import cloudinary from "../config/cloudinary.js";
+import fs from "fs";
 
 // @desc Get logged in user
 // @route GET /user
@@ -30,4 +32,32 @@ const anyUserDetails = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, data: userDetails });
 });
 
-export { loggedInUserDetails, anyUserDetails };
+// @desc Upload profile image
+// @route POST /user/image
+// @access Private
+const uploadUserImg = asyncHandler(async (req, res) => {
+    let { user } = req;
+    let loggedInUser = await User.findById(user._id);
+    if (!loggedInUser) {
+        return next(
+            new ErrorResponse(`User not found with id of ${user._id}`, 404)
+        );
+    }
+    const options = {
+        public_id: user._id,
+        unique_filename: false,
+        overwrite: true,
+    };
+    const result = await cloudinary.uploader.upload(req.file.path, options);
+    fs.unlinkSync(req.file.path);
+    loggedInUser.profileImage = result.secure_url;
+    await loggedInUser.save();
+    return res.status(200).json({
+        message: "Image has been uploaded",
+        url: result.secure_url,
+        name: result.public_id,
+        status: true,
+    });
+});
+
+export { loggedInUserDetails, anyUserDetails, uploadUserImg };
