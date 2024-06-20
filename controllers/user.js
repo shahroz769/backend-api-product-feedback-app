@@ -3,6 +3,7 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import User from "../models/User.js";
 import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
+import bcrypt from "bcrypt";
 
 // @desc Get logged in user
 // @route GET /user
@@ -29,6 +30,55 @@ const anyUserDetails = asyncHandler(async (req, res, next) => {
             new ErrorResponse(`User not found with id of ${userId}`, 404)
         );
     }
+    res.status(200).json({ success: true, data: userDetails });
+});
+
+// @desc Update logged in user
+// @route POST /user
+// @access Private
+const updateUserDetails = asyncHandler(async (req, res, next) => {
+    const userId = req.user.id;
+    const { firstName, lastName, username, email, password } = req.body;
+    // Check if the username already exists (excluding the current user)
+    if (username) {
+        const existingUsername = await User.findOne({
+            username,
+            _id: { $ne: userId },
+        });
+        if (existingUsername) {
+            return next(new ErrorResponse(`Username already in use`, 400));
+        }
+    }
+    // Check if the email already exists (excluding the current user)
+    if (email) {
+        const existingEmail = await User.findOne({
+            email,
+            _id: { $ne: userId },
+        });
+        if (existingEmail) {
+            return next(new ErrorResponse(`Email already in use`, 400));
+        }
+    }
+    // Find the user by ID
+    let userDetails = await User.findById(userId);
+    if (!userDetails) {
+        return next(
+            new ErrorResponse(`User not found with id of ${userId}`, 404)
+        );
+    }
+    // Update fields
+    if (firstName) userDetails.firstName = firstName;
+    if (lastName) userDetails.lastName = lastName;
+    if (username) userDetails.username = username;
+    if (email) userDetails.email = email;
+    // Hash the password if provided
+    if (password) {
+        const saltRounds = 10;
+        userDetails.password = await bcrypt.hash(password, saltRounds);
+    }
+    // Save updated user details
+    await userDetails.save();
+    userDetails.password = undefined;
     res.status(200).json({ success: true, data: userDetails });
 });
 
@@ -60,4 +110,9 @@ const uploadUserImg = asyncHandler(async (req, res) => {
     });
 });
 
-export { loggedInUserDetails, anyUserDetails, uploadUserImg };
+export {
+    loggedInUserDetails,
+    anyUserDetails,
+    updateUserDetails,
+    uploadUserImg,
+};
