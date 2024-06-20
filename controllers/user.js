@@ -54,8 +54,8 @@ const uploadUserImg = asyncHandler(async (req, res) => {
     await loggedInUser.save();
     return res.status(200).json({
         message: "Image has been uploaded",
-        url: result.secure_url,
         name: result.public_id,
+        url: result.secure_url,
         status: true,
     });
 });

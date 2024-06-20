@@ -1,7 +1,10 @@
 import express from "express";
 import {
     getFeedback,
+    getDetailedFeedback,
     getFeedbacks,
+    getHomeFeedbacks,
+    getRoadmapFeedbacks,
     addFeedback,
     updateFeedback,
     deleteFeedback,
@@ -22,6 +25,12 @@ router
     .route("/")
     .get(protectRoute, getFeedbacks)
     .post(protectRoute, addFeedback);
+    
+router.route("/details/:id").get(protectRoute, getDetailedFeedback);
+
+router.route("/home").get(protectRoute, getHomeFeedbacks);
+
+router.route("/roadmap").get(protectRoute, getRoadmapFeedbacks);
 
 router
     .route("/:id")
@@ -29,19 +38,15 @@ router
     .put(protectRoute, updateFeedback)
     .delete(protectRoute, deleteFeedback);
 
-// Params: Feedback id
 router.route("/comment/:id").post(protectRoute, addComment);
 
-// Params: Comment id
 router
     .route("/comment/:id")
     .put(protectRoute, updateComment)
     .delete(protectRoute, deleteComment);
 
-// Params: Comment id
 router.route("/reply/:id").post(protectRoute, addReply);
 
-// Params: Reply id
 router
     .route("/reply/:id")
     .put(protectRoute, updateReply)
