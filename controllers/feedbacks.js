@@ -133,11 +133,53 @@ const getFeedbacks = asyncHandler(async (req, res, next) => {
 // @access Private
 const getHomeFeedbacks = asyncHandler(async (req, res, next) => {
     const userId = req.user.id;
-    // Find all feedbacks with status 'suggestion'
-    const feedbacks = await Feedback.find({ status: "suggestion" })
-        .populate("upvotes")
-        .populate("comments")
-        .select("_id title description category upvotes comments");
+    const { sortBy, order, filter, lastId, limit = 10 } = req.query;
+    // Build the query object for filtering
+    let query = { status: "suggestion" };
+    if (filter) {
+        switch (filter) {
+            case "myFeedback":
+                query.user = userId;
+                break;
+            case "myUpvoted":
+                query.upvotes = { $in: [userId] };
+                break;
+            case "myCommented":
+                query.comments = { $elemMatch: { user: userId } };
+                break;
+            default:
+                break;
+        }
+    }
+    // Add pagination by lastId
+    if (lastId) {
+        query._id = { $gt: lastId };
+    }
+    // Build the sort options
+    let sortOptions = {};
+    if (sortBy) {
+        if (sortBy === "upvotes") {
+            sortOptions = { upvotesCount: order === "asc" ? 1 : -1 };
+        } else if (sortBy === "comments") {
+            sortOptions = { commentsCount: order === "asc" ? 1 : -1 };
+        } else {
+            sortOptions[sortBy] = order === "asc" ? 1 : -1;
+        }
+    } else {
+        sortOptions = { createdAt: -1 }; // Default sort by creation date descending
+    }
+    // Aggregate feedbacks with sorting, filtering, and pagination
+    const feedbacks = await Feedback.aggregate([
+        { $match: query },
+        {
+            $addFields: {
+                upvotesCount: { $size: "$upvotes" },
+                commentsCount: { $size: "$comments" },
+            },
+        },
+        { $sort: sortOptions },
+        { $limit: Number(limit) },
+    ]);
     if (!feedbacks.length) {
         return next(new ErrorResponse(`No feedbacks found`, 404));
     }
@@ -156,17 +198,15 @@ const getHomeFeedbacks = asyncHandler(async (req, res, next) => {
         return acc;
     }, {});
     // Transform feedbacks to include the counts and upvoted status
-    const transformedFeedbacks = feedbacks.map((feedback) => {
-        return {
-            _id: feedback._id,
-            title: feedback.title,
-            description: feedback.description,
-            category: feedback.category,
-            upvotesCount: feedback.upvotes.length,
-            commentsCount: feedback.comments.length,
-            upvoted: feedback.upvotes.some((upvote) => upvote.equals(userId)),
-        };
-    });
+    const transformedFeedbacks = feedbacks.map((feedback) => ({
+        _id: feedback._id,
+        title: feedback.title,
+        description: feedback.description,
+        category: feedback.category,
+        upvotesCount: feedback.upvotesCount,
+        commentsCount: feedback.commentsCount,
+        upvoted: feedback.upvotes.some((upvote) => upvote.equals(userId)),
+    }));
     res.status(200).json({
         success: true,
         feedbacks: transformedFeedbacks,
