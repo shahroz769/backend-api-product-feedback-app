@@ -5,7 +5,6 @@ import User from "../models/User.js";
 
 const protectRoute = asyncHandler(async (req, res, next) => {
     let token;
-
     // Check whether the token exists or not
     if (
         req.headers.authorization &&
@@ -18,18 +17,16 @@ const protectRoute = asyncHandler(async (req, res, next) => {
     // else if (req.cookies.token) {
     //     token = req.cookies.token;
     // }
-
     // Return if token does not exist
     if (!token) {
         return next(
             new ErrorResponse("Not authorized to access this route", 401)
         );
     }
-
     // Verify the token
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findOne({ _id: decoded.userId });
+        req.user = await User.findOne({ _id: decoded.userId, token });
         if (!req.user) {
             return next(
                 new ErrorResponse("Not authorized to access this route", 401)
