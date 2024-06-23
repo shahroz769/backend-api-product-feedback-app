@@ -10,9 +10,7 @@ import User from "../models/User.js";
 const register = asyncHandler(async (req, res, next) => {
     const { firstName, lastName, username, email, password } = req.body;
     // Check for existing user
-    const existingUser = await User.findOne({
-        email,
-    }).select("+password");
+    const existingUser = await User.findOne({ email }).select("+password");
     if (existingUser) {
         return next(new ErrorResponse("Email already in use", 400));
     }
@@ -26,7 +24,6 @@ const register = asyncHandler(async (req, res, next) => {
         email,
         password: hashedPassword,
     });
-    user.password = undefined;
     sendTokenResponse(user, 200, res);
 });
 
@@ -54,7 +51,6 @@ const login = asyncHandler(async (req, res, next) => {
     if (!isMatch) {
         return next(new ErrorResponse("Invalid credentials", 401));
     }
-    user.password = undefined;
     sendTokenResponse(user, 200, res);
 });
 
@@ -79,6 +75,9 @@ const sendTokenResponse = async (user, statusCode, res) => {
     // Store JWT in the database
     user.token = token;
     await user.save();
+    // Exclude the password from the user object
+    const userObject = user.toObject();
+    delete userObject.password;
     // Cookie options
     const options = {
         expires: new Date(
@@ -92,7 +91,7 @@ const sendTokenResponse = async (user, statusCode, res) => {
     }
     res.status(statusCode).cookie("token", token, options).json({
         success: true,
-        user,
+        user: userObject,
         token,
     });
 };
